@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}EnergyWise{% endblock %} | Smart Electricity Management</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <a class="brand" href="{{ url_for('dashboard') }}">
+        <span class="brand-mark">⚡</span>
+        <span><strong>EnergyWise</strong><small>CONSUMPTION MANAGER</small></span>
+      </a>
+      <div class="nav-caption">WORKSPACE</div>
+      <nav class="nav-menu">
+        <a class="nav-link {% if request.endpoint == 'dashboard' %}active{% endif %}" href="{{ url_for('dashboard') }}"><span>▦</span> Overview</a>
+        <a class="nav-link {% if request.endpoint in ['readings','add_reading'] %}active{% endif %}" href="{{ url_for('readings') }}"><span>▤</span> Consumption records</a>
+        <a class="nav-link {% if request.endpoint == 'add_reading' %}active{% endif %}" href="{{ url_for('add_reading') }}"><span>＋</span> Add reading</a>
+        <a class="nav-link {% if request.endpoint == 'settings' %}active{% endif %}" href="{{ url_for('settings') }}"><span>⚙</span> Settings</a>
+      </nav>
+      <div class="sidebar-bottom">
+        <div class="eco-icon">♧</div>
+        <strong>Every unit counts.</strong>
+        <p>Understand your energy. Make smarter decisions.</p>
+        <div class="sidebar-tag">SUSTAINABILITY · SDG 7</div>
+      </div>
+      <div class="sidebar-footer"><span class="status-dot"></span> Local demo environment</div>
+    </aside>
+    <main class="main-area">
+      <header class="topbar">
+        <div class="mobile-brand"><span>⚡</span> EnergyWise</div>
+        <div class="breadcrumb">Workspace <span>/</span> {% block breadcrumb %}Overview{% endblock %}</div>
+        <div class="topbar-right"><span class="live-dot"></span><span>System operational</span><div class="avatar">EW</div></div>
+      </header>
+      <section class="page-content">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}<div class="flash-stack">{% for category, message in messages %}<div class="flash {{ category }}">{{ message }}<button onclick="this.parentElement.remove()" aria-label="Dismiss">×</button></div>{% endfor %}</div>{% endif %}
+        {% endwith %}
+        {% block content %}{% endblock %}
+      </section>
+      <footer class="page-footer">EnergyWise · Smart Electricity Consumption Management System <span>Academic software prototype</span></footer>
+    </main>
+  </div>
+  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

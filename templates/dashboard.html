@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}Overview{% endblock %}
+{% block breadcrumb %}Overview{% endblock %}
+{% block content %}
+<div class="page-heading">
+  <div><div class="eyebrow">ENERGY INTELLIGENCE</div><h1>Consumption overview</h1><p>Monitor usage, identify unusual patterns, and find opportunities to save.</p></div>
+  <a class="btn btn-primary" href="{{ url_for('add_reading') }}">＋ Add reading</a>
+</div>
+<div class="date-strip"><span class="date-icon">▦</span><span>All recorded readings</span><span class="date-separator">·</span><strong>{{ totals.readings_count }} records</strong><span class="date-right">Updated from your local database</span></div>
+
+<div class="metric-grid">
+  <div class="metric-card"><div class="metric-top"><span>Total consumption</span><span class="metric-icon mint">ϟ</span></div><div class="metric-value">{{ "%.1f"|format(totals.total_kwh|float) }} <small>kWh</small></div><div class="metric-foot"><span class="mini-pill neutral">All records</span><span class="muted">Actual usage</span></div></div>
+  <div class="metric-card"><div class="metric-top"><span>Estimated electricity cost</span><span class="metric-icon blue">₹</span></div><div class="metric-value">₹{{ "{:,.2f}".format(totals.estimated_cost|float) }}</div><div class="metric-foot"><span class="mini-pill neutral">₹{{ "%.2f"|format(rate) }}/kWh</span><span class="muted">Illustrative estimate</span></div></div>
+  <div class="metric-card"><div class="metric-top"><span>High usage alerts</span><span class="metric-icon coral">!</span></div><div class="metric-value">{{ high_count }} <small>alerts</small></div><div class="metric-foot"><span class="mini-pill {% if high_count %}danger-pill{% else %}good-pill{% endif %}">{% if high_count %}Needs review{% else %}No high alerts{% endif %}</span><span class="muted">≥150% of expected</span></div></div>
+  <div class="metric-card"><div class="metric-top"><span>Expected consumption</span><span class="metric-icon violet">◎</span></div><div class="metric-value">{{ "%.1f"|format(totals.expected_kwh|float) }} <small>kWh</small></div><div class="metric-foot"><span class="mini-pill neutral">Baseline</span><span class="muted">Expected usage</span></div></div>
+</div>
+
+<div class="content-grid">
+  <section class="panel chart-panel">
+    <div class="panel-heading"><div><h2>Consumption trends</h2><p>Daily actual usage compared with expected usage</p></div><span class="chart-key"><i class="key-actual"></i> Actual <i class="key-expected"></i> Expected</span></div>
+    <div class="chart-wrap"><canvas id="trendChart"></canvas></div>
+    <div class="chart-foot"><span>Recent 14-day window</span><span>Unit: kWh</span></div>
+  </section>
+  <section class="panel building-panel">
+    <div class="panel-heading"><div><h2>Usage by building</h2><p>Highest recorded consumption</p></div></div>
+    {% if by_building %}
+      <div class="building-list">{% for b in by_building %}<div class="building-row"><div class="building-info"><span class="building-dot dot-{{ loop.index }}"></span><span>{{ b.building }}</span><strong>{{ "%.1f"|format(b.total|float) }} kWh</strong></div><div class="progress-track"><div class="progress-fill fill-{{ loop.index }}" style="width:{{ ([((b.total|float / (by_building[0].total|float if by_building[0].total|float > 0 else 1))*100), 100]|min) }}%"></div></div></div>{% endfor %}</div>
+    {% else %}<div class="empty-state">No readings yet. Add your first reading to see building usage.</div>{% endif %}
+  </section>
+</div>
+
+<div class="content-grid lower-grid">
+  <section class="panel">
+    <div class="panel-heading"><div><h2>Consumption records</h2><p>Latest readings from your buildings</p></div><a class="text-link" href="{{ url_for('readings') }}">View all →</a></div>
+    <div class="table-scroll"><table><thead><tr><th>LOCATION</th><th>DATE</th><th>ACTUAL</th><th>EXPECTED</th><th>STATUS</th></tr></thead><tbody>
+    {% for r in rows %}<tr><td><div class="location-cell"><span class="location-icon">⌂</span><span><strong>{{ r.room }}</strong><small>{{ r.building }}</small></span></div></td><td>{{ r.reading_date.strftime("%d %b %Y") }}</td><td class="table-strong">{{ "%.1f"|format(r.consumption_kwh|float) }} kWh</td><td>{{ "%.1f"|format(r.expected_kwh|float) }} kWh</td><td><span class="status-badge {{ r.status|lower|replace(' ', '-') }}">{{ r.status }}</span></td></tr>
+    {% else %}<tr><td colspan="5" class="empty-cell">No readings have been recorded.</td></tr>{% endfor %}
+    </tbody></table></div>
+  </section>
+  <section class="panel alerts-panel">
+    <div class="panel-heading"><div><h2>Needs attention</h2><p>Readings above expected usage</p></div><span class="alert-count">{{ alerts|length }}</span></div>
+    {% for a in alerts %}<div class="alert-item"><div class="alert-symbol {% if a.status == 'High' %}alert-high{% else %}alert-warning{% endif %}">!</div><div class="alert-copy"><strong>{{ a.room }}</strong><span>{{ a.building }} · {{ a.ratio|int }}% of expected</span><small>{{ "%.1f"|format(a.consumption_kwh|float) }} kWh actual / {{ "%.1f"|format(a.expected_kwh|float) }} kWh expected</small></div><span class="status-badge {{ a.status|lower }}">{{ a.status }}</span></div>
+    {% else %}<div class="empty-state">No unusual readings found. Add more data to monitor usage.</div>{% endfor %}
+    <div class="recommendation"><div class="recommendation-icon">✦</div><div><strong>Energy-saving tip</strong><p>Review air-conditioning schedules, switch off unused lights, and compare similar rooms to find avoidable consumption.</p></div></div>
+  </section>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+const trendLabels = {{ labels|tojson }};
+const actualValues = {{ actual|tojson }};
+const expectedValues = {{ expected|tojson }};
+new Chart(document.getElementById('trendChart'), {
+  type: 'line',
+  data: { labels: trendLabels, datasets: [
+    { label: 'Actual', data: actualValues, borderColor: '#16866c', backgroundColor: 'rgba(22,134,108,.10)', fill: true, tension: .35, borderWidth: 2.5, pointRadius: 3, pointBackgroundColor: '#16866c' },
+    { label: 'Expected', data: expectedValues, borderColor: '#a5b4c5', backgroundColor: 'transparent', borderDash: [5,5], fill: false, tension: .35, borderWidth: 2, pointRadius: 2 }
+  ]},
+  options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { mode: 'index', intersect: false } }, scales: { x: { grid: { display: false }, ticks: { color: '#7a8798', maxRotation: 0 } }, y: { beginAtZero: true, grid: { color: '#edf1f5' }, ticks: { color: '#7a8798' } } } }
+});
+</script>
+{% endblock %}

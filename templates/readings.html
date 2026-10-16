@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Consumption records{% endblock %}
+{% block breadcrumb %}Consumption records{% endblock %}
+{% block content %}
+<div class="page-heading"><div><div class="eyebrow">DATA MANAGEMENT</div><h1>Consumption records</h1><p>Review electricity readings and investigate unusual consumption.</p></div><a class="btn btn-primary" href="{{ url_for('add_reading') }}">＋ Add reading</a></div>
+<div class="panel records-panel">
+  <form class="search-row" method="get" action="{{ url_for('readings') }}"><div class="search-box"><span>⌕</span><input type="search" name="q" value="{{ q }}" placeholder="Search building, room or meter ID..."></div><button class="btn btn-outline" type="submit">Search</button>{% if q %}<a class="btn btn-quiet" href="{{ url_for('readings') }}">Clear</a>{% endif %}<span class="record-count">{{ rows|length }} records</span></form>
+  <div class="table-scroll"><table><thead><tr><th>DATE</th><th>BUILDING / ROOM</th><th>METER ID</th><th>ACTUAL (kWh)</th><th>EXPECTED (kWh)</th><th>STATUS</th><th>ACTION</th></tr></thead><tbody>
+  {% for r in rows %}<tr><td>{{ r.reading_date.strftime("%d %b %Y") }}</td><td><div class="location-cell"><span class="location-icon">⌂</span><span><strong>{{ r.building }}</strong><small>{{ r.room }}</small></span></div></td><td>{{ r.meter_id }}</td><td class="table-strong">{{ "%.2f"|format(r.consumption_kwh|float) }}</td><td>{{ "%.2f"|format(r.expected_kwh|float) }}</td><td><span class="status-badge {{ r.status|lower|replace(' ', '-') }}">{{ r.status }}</span></td><td><form method="post" action="{{ url_for('delete_reading', reading_id=r.id) }}" onsubmit="return confirm('Delete this reading?');"><button class="icon-button delete-button" title="Delete reading" aria-label="Delete reading">×</button></form></td></tr>
+  {% else %}<tr><td colspan="7" class="empty-cell">No records found. Add a reading or try a different search.</td></tr>{% endfor %}
+  </tbody></table></div>
+  <div class="table-note">Alerts are based on actual consumption compared with the expected baseline entered for each reading.</div>
+</div>
+{% endblock %}

@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Add reading{% endblock %}
+{% block breadcrumb %}Add reading{% endblock %}
+{% block content %}
+<div class="page-heading"><div><div class="eyebrow">DATA ENTRY</div><h1>Add electricity reading</h1><p>Record actual consumption and compare it with expected usage.</p></div><a class="btn btn-outline" href="{{ url_for('readings') }}">← Back to records</a></div>
+<div class="form-layout">
+  <section class="panel form-panel">
+    <div class="panel-heading"><div><h2>Reading details</h2><p>Fields marked * are required.</p></div><span class="form-step">NEW RECORD</span></div>
+    <form method="post" class="reading-form">
+      <div class="form-section-title">LOCATION & IDENTIFICATION</div>
+      <div class="form-grid">
+        <label>Reading date *<input type="date" name="reading_date" value="{{ request.form.get('reading_date', today) }}" required></label>
+        <label>Building / block *<input type="text" name="building" value="{{ request.form.get('building','') }}" placeholder="e.g. Main Building" maxlength="100" required></label>
+        <label>Room / area *<input type="text" name="room" value="{{ request.form.get('room','') }}" placeholder="e.g. Classroom 101" maxlength="100" required></label>
+        <label>Meter ID *<input type="text" name="meter_id" value="{{ request.form.get('meter_id','') }}" placeholder="e.g. MTR-MB-101" maxlength="80" required></label>
+      </div>
+      <div class="form-section-title form-section-spaced">ENERGY CONSUMPTION</div>
+      <div class="form-grid">
+        <label>Actual consumption (kWh) *<input type="number" name="consumption_kwh" value="{{ request.form.get('consumption_kwh','') }}" placeholder="e.g. 18.50" min="0" step="0.01" required><small>Measured or sample electricity usage.</small></label>
+        <label>Expected consumption (kWh) *<input type="number" name="expected_kwh" value="{{ request.form.get('expected_kwh','') }}" placeholder="e.g. 12.00" min="0.01" step="0.01" required><small>Normal or baseline usage for comparison.</small></label>
+      </div>
+      <label class="full-label">Notes / observations<textarea name="notes" rows="3" maxlength="500" placeholder="Optional: equipment left on, lab session, inspection notes...">{{ request.form.get('notes','') }}</textarea></label>
+      <div class="form-hint"><span>ⓘ</span><p>Readings at 120% of expected usage trigger a warning. Readings at 150% trigger a high-usage alert.</p></div>
+      <div class="form-actions"><a class="btn btn-quiet" href="{{ url_for('readings') }}">Cancel</a><button class="btn btn-primary" type="submit">Save reading <span>→</span></button></div>
+    </form>
+  </section>
+  <aside class="side-help"><div class="help-illustration">ϟ</div><h3>Why track expected usage?</h3><p>Comparing actual consumption with a baseline helps spot unusual readings that may need investigation.</p><div class="help-rule"></div><div class="help-point"><span class="help-dot normal-dot"></span><div><strong>Normal</strong><p>Below 120% of expected usage</p></div></div><div class="help-point"><span class="help-dot warning-dot"></span><div><strong>Warning</strong><p>120% to less than 150%</p></div></div><div class="help-point"><span class="help-dot high-dot"></span><div><strong>High</strong><p>150% or more of expected usage</p></div></div></aside>
+</div>
+{% endblock %}

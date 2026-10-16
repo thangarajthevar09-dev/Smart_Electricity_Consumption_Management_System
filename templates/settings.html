@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Settings{% endblock %}
+{% block breadcrumb %}Settings{% endblock %}
+{% block content %}
+<div class="page-heading"><div><div class="eyebrow">CONFIGURATION</div><h1>Settings</h1><p>Configure the electricity rate used for cost estimates.</p></div></div>
+<div class="settings-layout">
+  <section class="panel settings-panel"><div class="panel-heading"><div><h2>Electricity pricing</h2><p>Used to calculate the estimated cost on the dashboard.</p></div><span class="metric-icon blue">₹</span></div>
+    <form method="post" class="reading-form">
+      <label>Electricity rate (₹ per kWh) *<input type="number" name="rate_per_kwh" min="0" step="0.01" value="{{ '%.2f'|format(rate) }}" required><small>This is a simplified flat rate for the prototype. Use a rate appropriate for your demonstration.</small></label>
+      <div class="form-hint"><span>ⓘ</span><p>Estimated cost = total recorded kWh × electricity rate. Actual bills may include slabs, taxes, fixed charges and other fees.</p></div>
+      <div class="form-actions"><button class="btn btn-primary" type="submit">Save settings →</button></div>
+    </form>
+  </section>
+  <section class="panel settings-panel"><div class="panel-heading"><div><h2>Detection thresholds</h2><p>Current rules used to flag unusual consumption.</p></div></div>
+    <div class="threshold-row"><span class="help-dot normal-dot"></span><div><strong>Normal</strong><p>Less than 120% of expected consumption</p></div></div>
+    <div class="threshold-row"><span class="help-dot warning-dot"></span><div><strong>Warning</strong><p>At least 120% and below 150%</p></div></div>
+    <div class="threshold-row"><span class="help-dot high-dot"></span><div><strong>High usage</strong><p>At least 150% of expected consumption</p></div></div>
+    <div class="note-card">These are configurable design assumptions for a student prototype, not an official utility standard.</div>
+  </section>
+</div>
+{% endblock %}
